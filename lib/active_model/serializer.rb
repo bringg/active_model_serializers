@@ -26,15 +26,15 @@ module ActiveModel
       end
 
       EMBED_IN_ROOT_OPTIONS = [
-        :include,
-        :embed_in_root,
-        :embed_in_root_key,
-        :embed_namespace
+          :include,
+          :embed_in_root,
+          :embed_in_root_key,
+          :embed_namespace
       ].freeze
 
       def embed(type, options={})
         CONFIG.embed = type
-        if EMBED_IN_ROOT_OPTIONS.any? { |opt| options[opt].present? }
+        if EMBED_IN_ROOT_OPTIONS.any? {|opt| options[opt].present?}
           CONFIG.embed_in_root = true
         end
         if options[:embed_in_root_key].present?
@@ -54,11 +54,14 @@ end
       def format_keys(format)
         @key_format = format
       end
+
       attr_reader :key_format
 
       def serializer_for(resource, options = {})
         if resource.respond_to?(:serializer_class)
           resource.serializer_class
+        elsif resource.nil?
+          DefaultSerializer
         elsif resource.respond_to?(:to_ary)
           if Object.constants.include?(:ArraySerializer)
             ::ArraySerializer
@@ -74,7 +77,7 @@ end
       end
 
       attr_accessor :_root, :_attributes, :_associations
-      alias root  _root=
+      alias root _root=
       alias root= _root=
 
       def root_name
@@ -140,27 +143,28 @@ end
     end
 
     def initialize(object, options={})
-      @object        = object
-      @scope         = options[:scope]
-      @root          = options.fetch(:root, self.class._root)
-      @polymorphic   = options.fetch(:polymorphic, false)
-      @meta_key      = options[:meta_key] || :meta
-      @meta          = options[@meta_key]
+      @object = object
+      @scope = options[:scope]
+      @root = options.fetch(:root, self.class._root)
+      @polymorphic = options.fetch(:polymorphic, false)
+      @meta_key = options[:meta_key] || :meta
+      @meta = options[@meta_key]
       @wrap_in_array = options[:_wrap_in_array]
-      @only          = options[:only] ? Array(options[:only]) : nil
-      @except        = options[:except] ? Array(options[:except]) : nil
-      @key_format    = options[:key_format]
-      @context       = options[:context]
-      @namespace     = options[:namespace]
+      @only = options[:only] ? Array(options[:only]) : nil
+      @except = options[:except] ? Array(options[:except]) : nil
+      @key_format = options[:key_format]
+      @context = options[:context]
+      @namespace = options[:namespace]
     end
+
     attr_accessor :object, :scope, :root, :meta_key, :meta, :key_format, :context, :polymorphic
 
     def json_key
       key = if root == true || root.nil?
-        self.class.root_name
-      else
-        root
-      end
+              self.class.root_name
+            else
+              root
+            end
 
       key_format == :lower_camel && key.present? ? key.camelize(:lower) : key
     end
@@ -216,7 +220,7 @@ end
             if oldval.respond_to?(:to_ary)
               [oldval, newval].flatten.uniq
             else
-              oldval.merge(newval) { |_, oldval, newval| [oldval, newval].flatten.uniq }
+              oldval.merge(newval) {|_, oldval, newval| [oldval, newval].flatten.uniq}
             end
           end
 
@@ -243,23 +247,23 @@ end
     end
 
     def association_options_for_serializer(association)
-      prefix    = association.options[:prefix]
+      prefix = association.options[:prefix]
       namespace = association.options[:namespace] || @namespace || self.namespace
 
-      { scope: scope }.tap do |opts|
+      {scope: scope}.tap do |opts|
         opts[:namespace] = namespace if namespace
-        opts[:prefix]    = prefix    if prefix
+        opts[:prefix] = prefix if prefix
       end
     end
 
-    def serialize(association,options={})
+    def serialize(association, options={})
       build_serializer(association).serializable_object(options)
     end
 
     def serialize_ids(association)
       associated_data = send(association.name)
       if associated_data.respond_to?(:to_ary)
-        associated_data.map { |elem| serialize_id(elem, association) }
+        associated_data.map {|elem| serialize_id(elem, association)}
       else
         serialize_id(associated_data, association) if associated_data
       end
@@ -278,18 +282,19 @@ end
     end
 
     def convert_keys(hash)
-      Hash[hash.map do |k,v|
+      Hash[hash.map do |k, v|
         key = if k.is_a?(Symbol)
-          format_key(k).to_sym
-        else
-          format_key(k)
-        end
+                format_key(k).to_sym
+              else
+                format_key(k)
+              end
 
-        [key ,v]
+        [key, v]
       end]
     end
 
     attr_writer :serialization_options
+
     def serialization_options
       @serialization_options || {}
     end
@@ -300,14 +305,15 @@ end
       hash = attributes
       hash.merge! associations(options)
       hash = convert_keys(hash) if key_format.present?
-      hash = { :type => type_name(@object), type_name(@object) => hash } if @polymorphic
+      hash = {:type => type_name(@object), type_name(@object) => hash} if @polymorphic
       @wrap_in_array ? [hash] : hash
     end
+
     alias_method :serializable_hash, :serializable_object
 
     def serialize_id(elem, association)
       id = elem.read_attribute_for_serialization(association.embed_key)
-      association.polymorphic? ? { id: id, type: type_name(elem) } : id
+      association.polymorphic? ? {id: id, type: type_name(elem)} : id
     end
 
     def type_name(elem)
