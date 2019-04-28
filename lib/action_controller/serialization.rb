@@ -60,7 +60,14 @@ module ActionController
     private
 
     def namespace_for_serializer
-      @namespace_for_serializer ||= self.class.parent unless self.class.parent == Object
+      @namespace_for_serializer ||= begin
+                                       parent = if self.class.respond_to?(:module_parent)
+                                                  self.class.module_parent
+                                                else
+                                                  self.class.parent
+                                               end
+                                       parent unless parent == Object
+                                     end
     end
 
     def default_serializer(resource)
