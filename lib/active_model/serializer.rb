@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'active_model/array_serializer'
 require 'active_model/serializable'
 require 'active_model/serializer/association'
@@ -122,11 +123,10 @@ end
       end
 
       def build_serializer_class(resource, options)
-        "".tap do |klass_name|
-          klass_name << "#{options[:namespace]}::" if options[:namespace]
-          klass_name << options[:prefix].to_s.classify if options[:prefix]
-          klass_name << "#{resource.class.name}Serializer"
-        end
+        klass_name = "".dup
+        klass_name << "#{options[:namespace]}::" if options[:namespace]
+        klass_name << options[:prefix].to_s.classify if options[:prefix]
+        klass_name << "#{resource.class.name}Serializer"
       end
 
       def associate(klass, *attrs)
@@ -169,31 +169,31 @@ end
       key_format == :lower_camel && key.present? ? key.camelize(:lower) : key
     end
 
-    def attributes
-      filter(self.class._attributes.dup).each_with_object({}) do |name, hash|
+    def attributes(hash)
+      filter(self.class._attributes.dup).each do |name|
         hash[name] = send(name)
       end
     end
 
-    def associations(options={})
+    def associations(hash, options={})
       associations = self.class._associations
       included_associations = filter(associations.keys)
-      associations.each_with_object({}) do |(name, association), hash|
-        if included_associations.include? name
-          if association.embed_ids?
-            ids = serialize_ids association
-            if association.embed_namespace?
-              hash = hash[association.embed_namespace] ||= {}
-              hash[association.key] = ids
-            else
-              hash[association.key] = ids
-            end
-          elsif association.embed_objects?
-            if association.embed_namespace?
-              hash = hash[association.embed_namespace] ||= {}
-            end
-            hash[association.embedded_key] = serialize association, options
+      associations.each do |(name, association)|
+        next unless included_associations.include? name
+
+        if association.embed_ids?
+          ids = serialize_ids association
+          if association.embed_namespace?
+            hash = hash[association.embed_namespace] ||= {}
+            hash[association.key] = ids
+          else
+            hash[association.key] = ids
           end
+        elsif association.embed_objects?
+          if association.embed_namespace?
+            hash = hash[association.embed_namespace] ||= {}
+          end
+          hash[association.embedded_key] = serialize association, options
         end
       end
     end
@@ -247,13 +247,15 @@ end
     end
 
     def association_options_for_serializer(association)
-      prefix = association.options[:prefix]
-      namespace = association.options[:namespace] || @namespace || self.namespace
+      options = { scope: scope }
 
-      {scope: scope}.tap do |opts|
-        opts[:namespace] = namespace if namespace
-        opts[:prefix] = prefix if prefix
-      end
+      namespace = association.options[:namespace] || @namespace || self.namespace
+      options[:namespace] = namespace if namespace
+
+      prefix = association.options[:prefix]
+      options[:prefix] = prefix if prefix
+
+      options
     end
 
     def serialize(association, options={})
@@ -298,8 +300,10 @@ end
     def serializable_object(options={})
       self.serialization_options = options
       return @wrap_in_array ? [] : nil if @object.nil?
-      hash = attributes
-      hash.merge! associations(options)
+      hash = {}
+
+      attributes(hash)
+      associations(hash, options)
       hash = convert_keys(hash) if key_format.present?
       hash = {:type => type_name(@object), type_name(@object) => hash} if @polymorphic
       @wrap_in_array ? [hash] : hash

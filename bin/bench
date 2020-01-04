@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 # ActiveModelSerializers Benchmark driver
 # Adapted from
 # https://github.com/ruby-bench/ruby-bench-suite/blob/8ad567f7e43a044ae48c36833218423bb1e2bd9d/rails/benchmarks/driver.rb

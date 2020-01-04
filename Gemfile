@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 source 'https://rubygems.org'
 
 gemspec
@@ -47,5 +48,6 @@ group :test do
 end
 
 group :development, :test do
-  gem 'rubocop', '~> 0.34.0', require: false
+  gem 'rubocop', require: false
+  gem 'rubocop-performance', require: false
 end
