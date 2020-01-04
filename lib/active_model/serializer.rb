@@ -170,7 +170,7 @@ end
     end
 
     def attributes(hash)
-      filter(self.class._attributes.dup).each do |name|
+      filter(self.class._attributes).each do |name|
         hash[name] = send(name)
       end
     end
