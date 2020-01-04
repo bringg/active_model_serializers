@@ -178,7 +178,7 @@ end
     def associations(hash, options={})
       associations = self.class._associations
       included_associations = filter(associations.keys)
-      associations.each do |(name, association)|
+      associations.each do |name, association|
         next unless included_associations.include? name
 
         if association.embed_ids?
