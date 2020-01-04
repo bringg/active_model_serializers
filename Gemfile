@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gemspec
 
-version = ENV['RAILS_VERSION'] || '4.2'
+version = ENV['RAILS_VERSION'] || '5.2.0'
 
 if version == 'master'
   gem 'rack', github: 'rack/rack'
@@ -30,6 +30,7 @@ gem 'tzinfo-data'
 
 group :bench do
   gem 'benchmark-ips'
+  gem 'memory_profiler'
 end
 
 group :test do
