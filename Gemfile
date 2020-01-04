@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gemspec
 
-version = ENV['RAILS_VERSION'] || '4.2'
+version = ENV['RAILS_VERSION'] || '5.2'
 
 if version == 'master'
   gem 'rack', github: 'rack/rack'
