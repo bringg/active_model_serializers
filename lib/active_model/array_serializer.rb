@@ -26,6 +26,8 @@ module ActiveModel
       @context         = options[:context]
       @namespace       = options[:namespace]
       @key_format      = options[:key_format] || options[:each_serializer].try(:key_format)
+
+      @serializers_by_class = {}
     end
     attr_accessor :object, :scope, :root, :meta_key, :meta, :key_format, :context
 
@@ -37,12 +39,22 @@ module ActiveModel
 
     def serializer_for(item)
       serializer_class = @each_serializer || Serializer.serializer_for(item, namespace: @namespace) || DefaultSerializer
-      serializer_class.new(item, scope: scope, key_format: key_format, context: @context, only: @only, except: @except, polymorphic: @polymorphic, namespace: @namespace)
+
+      serializer = @serializers_by_class[serializer_class]
+
+      if serializer.nil?
+        serializer = serializer_class.new(item, scope: scope, key_format: key_format, context: @context, only: @only, except: @except, polymorphic: @polymorphic, namespace: @namespace)
+        @serializers_by_class[serializer_class] = serializer
+      end
+
+      serializer.object = item
+
+      serializer
     end
 
     def serializable_object(options={})
       @object.map do |item|
-        serializer_for(item).serializable_object_with_notification(options)
+        serializer_for(item).serializable_object(options)
       end
     end
     alias_method :serializable_array, :serializable_object

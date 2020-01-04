@@ -8,7 +8,7 @@ module ActiveModel
   class DefaultSerializer
     include ActiveModel::Serializable
 
-    attr_reader :object
+    attr_accessor :object
 
     def initialize(object, options={})
       @object = object
