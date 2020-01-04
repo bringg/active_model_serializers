@@ -31,11 +31,15 @@ module ActiveModel
     end
 
     def namespace
-      if module_name = get_namespace
-        Serializer.serializers_cache.fetch_or_store(module_name) do
-          Utils._const_get(module_name)
-        end
-      end
+      return @cached_namespace if defined? @cached_namespace
+
+      @cached_namespace = begin
+                            if module_name = get_namespace
+                              Serializer.serializers_cache.fetch_or_store(module_name) do
+                                Utils._const_get(module_name)
+                              end
+                            end
+                          end
     end
 
     def embedded_in_root_associations
