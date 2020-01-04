@@ -152,7 +152,7 @@ end
       @wrap_in_array = options[:_wrap_in_array]
       @only = options[:only] ? Array(options[:only]) : nil
       @except = options[:except] ? Array(options[:except]) : nil
-      @key_format = options[:key_format]
+      @key_format  = options[:key_format] || self.class.key_format || CONFIG.key_format
       @context = options[:context]
       @namespace = options[:namespace]
     end
@@ -267,10 +267,6 @@ end
       else
         serialize_id(associated_data, association) if associated_data
       end
-    end
-
-    def key_format
-      @key_format || self.class.key_format || CONFIG.key_format
     end
 
     def format_key(key)
