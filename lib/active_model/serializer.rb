@@ -300,8 +300,8 @@ end
     def serializable_object(options={})
       self.serialization_options = options
       return @wrap_in_array ? [] : nil if @object.nil?
-      hash = {}
 
+      hash = {}
       attributes(hash)
       associations(hash, options)
       hash = convert_keys(hash) if key_format.present?

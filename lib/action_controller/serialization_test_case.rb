@@ -8,11 +8,31 @@ module ActionController
       teardown :teardown_serialization_subscriptions
     end
 
+    module ::ActiveModel::Serializable
+      INSTRUMENTATION_KEY = '!serialize.active_model_serializers'.freeze
+
+      alias_method :as_json_orig, :as_json
+      alias_method :serializable_object_with_notification_orig, :serializable_object_with_notification
+
+      def as_json(options={})
+        instrument
+        as_json_orig(options)
+      end
+
+      def serializable_object_with_notification(options={})
+        instrument
+        serializable_object_with_notification_orig(options)
+      end
+
+      def instrument
+        ActiveSupport::Notifications.publish(INSTRUMENTATION_KEY, self.class.name)
+      end
+    end
+
     def setup_serialization_subscriptions
       @serializers = Hash.new(0)
 
-      ActiveSupport::Notifications.subscribe("!serialize.active_model_serializers") do |name, start, finish, id, payload|
-        serializer = payload[:serializer]
+      ActiveSupport::Notifications.subscribe("!serialize.active_model_serializers") do |_, serializer|
         @serializers[serializer] += 1
       end
     end

@@ -16,11 +16,9 @@ module ActiveModel
     end
 
     def as_json(options={})
-      instrument do
-        return [] if @object.nil? && @wrap_in_array
-        hash = @object.as_json
-        @wrap_in_array ? [hash] : hash
-      end
+      return [] if @object.nil? && @wrap_in_array
+      hash = @object.as_json
+      @wrap_in_array ? [hash] : hash
     end
 
     alias serializable_hash as_json

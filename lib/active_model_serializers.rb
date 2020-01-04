@@ -8,7 +8,11 @@ require 'active_model/serializer/railtie' if defined?(Rails)
 begin
   require 'action_controller'
   require 'action_controller/serialization'
-  require 'action_controller/serialization_test_case'
+
+  # This code adds performance hit to your app.
+  # If you need, please require it manually.
+  #
+  # require 'action_controller/serialization_test_case'
 
   ActiveSupport.on_load(:action_controller) do
     if ::ActionController::Serialization.enabled

@@ -2,6 +2,7 @@
 require 'bundler/setup'
 require 'minitest/autorun'
 require 'active_model_serializers'
+require 'action_controller/serialization_test_case'
 require 'fixtures/poro'
 
 # Ensure backward compatibility with Minitest 4
@@ -12,7 +13,6 @@ Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
 require 'rails-controller-testing'
 Rails::Controller::Testing.install
-
 
 module TestHelper
   Routes = ActionDispatch::Routing::RouteSet.new
