@@ -111,17 +111,17 @@ class TypeSerializer < ActiveModel::Serializer
   attributes :name
 end
 
-class SelfReferencingUserParentSerializer < ActiveModel::Serializer
-  attributes :name
-  has_one :type, serializer: TypeSerializer, embed: :ids, embed_in_root: true
-end
+#class SelfReferencingUserParentSerializer < ActiveModel::Serializer
+  #attributes :name
+  #has_one :type, serializer: TypeSerializer, embed: :ids, embed_in_root: true
+#end
 
-class SelfReferencingUserSerializer < ActiveModel::Serializer
-  attributes :name
+#class SelfReferencingUserSerializer < ActiveModel::Serializer
+  #attributes :name
 
-  has_one :type, serializer: TypeSerializer, embed: :ids, embed_in_root: true
-  has_one :parent, serializer: SelfReferencingUserSerializer, embed: :ids, embed_in_root: true
-end
+  #has_one :type, serializer: TypeSerializer, embed: :ids, embed_in_root: true
+  #has_one :parent, serializer: SelfReferencingUserSerializer, embed: :ids, embed_in_root: true
+#end
 
 class UserInfoSerializer < ActiveModel::Serializer
   has_one :user, serializer: UserSerializer

@@ -6,6 +6,9 @@ require 'active_model/serializer/config'
 require 'thread'
 require 'concurrent/map'
 
+require 'panko_serializer'
+
+
 module ActiveModel
   class Serializer
     include Serializable
@@ -14,9 +17,32 @@ module ActiveModel
 
     class << self
       def inherited(base)
+        if _descriptor.nil?
+          base._descriptor = Panko::SerializationDescriptor.new
+          base._descriptor.type = base
+
+          base._descriptor.attributes = []
+          base._descriptor.aliases = {}
+
+          base._descriptor.method_fields = []
+
+          base._descriptor.has_many_associations = []
+          base._descriptor.has_one_associations = []
+        else
+          base._descriptor = Panko::SerializationDescriptor.duplicate(_descriptor)
+        end
+
         base._root = _root
         base._attributes = (_attributes || []).dup
         base._associations = (_associations || {}).dup
+      end
+
+      def method_added(method)
+        return if @_descriptor.nil?
+
+        # TODO: might be bug here ..
+        deleted_attr = @_descriptor.attributes.delete(method)
+        @_descriptor.method_fields << Panko::Attribute.create(method) unless deleted_attr.nil?
       end
 
       def setup
@@ -77,6 +103,7 @@ end
       end
 
       attr_accessor :_root, :_attributes, :_associations
+      attr_accessor :_descriptor
       alias root _root=
       alias root= _root=
 
@@ -88,6 +115,8 @@ end
       end
 
       def attributes(*attrs)
+        @_descriptor.attributes.push(*attrs.map { |attr| Panko::Attribute.create(attr) }).uniq!
+
         attrs.each do |attr|
           striped_attr = strip_attribute attr
 
@@ -101,10 +130,36 @@ end
 
       def has_one(*attrs)
         associate(Association::HasOne, *attrs)
+
+        name = attrs[0]
+        options = attrs[1] || {}
+
+        serializer_const = options[:serializer]
+        serializer_const = Panko::SerializerResolver.resolve(name.to_s) if serializer_const.nil?
+        serializer_const ||= DefaultSerializer
+
+        @_descriptor.has_one_associations << Panko::Association.new(
+          name,
+          options.fetch(:name, name).to_s,
+          Panko::SerializationDescriptor.build(serializer_const, options)
+        )
       end
 
       def has_many(*attrs)
         associate(Association::HasMany, *attrs)
+
+        name = attrs[0]
+        options = attrs[1] || {}
+
+        serializer_const = options[:serializer]
+        serializer_const = Panko::SerializerResolver.resolve(name.to_s) if serializer_const.nil?
+        serializer_const ||= DefaultSerializer
+
+        @_descriptor.has_many_associations << Panko::Association.new(
+          name,
+          options.fetch(:name, name).to_s,
+          Panko::SerializationDescriptor.build(serializer_const, options)
+        )
       end
 
       def serializers_cache
@@ -319,6 +374,9 @@ end
     def type_name(elem)
       elem.class.to_s.demodulize.underscore.to_sym
     end
+
+    # panko compat
+    attr_accessor :serialization_context
   end
 
 end

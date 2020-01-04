@@ -22,6 +22,22 @@ module ActiveModel
       end
     end
 
+    def self._descriptor
+      # TODO: handle dynamics
+      descriptor = Panko::SerializationDescriptor.new
+
+      # TODO: create intiailizer in panko for this
+      descriptor.attributes = []
+      descriptor.aliases = {}
+
+      descriptor.method_fields = []
+
+      descriptor.has_many_associations = []
+      descriptor.has_one_associations = []
+
+      descriptor
+    end
+
     alias serializable_hash as_json
     alias serializable_object as_json
   end

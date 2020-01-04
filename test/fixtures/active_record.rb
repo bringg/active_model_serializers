@@ -56,7 +56,8 @@ end
 class ARPostSerializer < ActiveModel::Serializer
   attributes :title, :body
 
-  has_many :ar_comments, :ar_tags
+  has_many :ar_comments
+  has_many :ar_tags
   has_one  :ar_section
 end
 
@@ -75,7 +76,8 @@ class ARSectionSerializer < ActiveModel::Serializer
 end
 
 class AREmbeddedSerializer < ActiveModel::Serializer
-  has_many :ar_tags, :ar_comments
+  has_many :ar_tags
+  has_many :ar_comments
 end
 
 ARPost.create(title: 'New post',
