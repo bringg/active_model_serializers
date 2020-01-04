@@ -6,6 +6,13 @@ require 'fixtures/poro'
 # Ensure backward compatibility with Minitest 4
 Minitest::Test = MiniTest::Unit::TestCase unless defined?(Minitest::Test)
 
+require "minitest/reporters"
+Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
+
+require 'rails-controller-testing'
+Rails::Controller::Testing.install
+
+
 module TestHelper
   Routes = ActionDispatch::Routing::RouteSet.new
   Routes.draw do

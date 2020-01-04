@@ -19,11 +19,11 @@ module ActiveModel
 
       def test_url_helpers_are_available
         serializer = Class.new(ActiveModel::Serializer) do
-          attributes :url
-
           def url
             profile_url(id: object.object_id)
           end
+
+          attributes :url
         end
         profile = Profile.new
 

@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gemspec
 
-version = ENV["RAILS_VERSION"] || "4.2"
+version = ENV['RAILS_VERSION'] || '4.2'
 
 if version == 'master'
   gem 'rack', github: 'rack/rack'
@@ -14,11 +14,8 @@ if version == 'master'
     gem 'activemodel'
     gem 'actionpack'
     gem 'activerecord', group: :test
-    # Rails 5
     gem 'actionview'
   end
-  # Rails 5
-  gem 'rails-controller-testing', github: 'rails/rails-controller-testing'
 else
   gem_version = "~> #{version}.0"
   gem 'rails', gem_version
@@ -29,29 +26,21 @@ else
   gem 'activerecord', gem_version, group: :test
 end
 
-if RUBY_VERSION < '2'
-  gem 'mime-types', [ '>= 2.6.2', '< 3' ]
-end
-
-if RUBY_VERSION < '2.1'
-  gem 'nokogiri', '< 1.7'
-end
-
-# https://github.com/bundler/bundler/blob/89a8778c19269561926cea172acdcda241d26d23/lib/bundler/dependency.rb#L30-L54
-@windows_platforms = [:mswin, :mingw, :x64_mingw]
-
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-tzinfo_platforms = @windows_platforms
-tzinfo_platforms += [:jruby] if version >= '4.1'
-gem 'tzinfo-data', platforms: tzinfo_platforms
+gem 'tzinfo-data'
 
 group :bench do
-  gem 'benchmark-ips', '>= 2.7.2'
+  gem 'benchmark-ips'
 end
 
 group :test do
-  gem 'sqlite3',                          platform: (@windows_platforms + [:ruby])
-  gem 'activerecord-jdbcsqlite3-adapter', platform: :jruby
+  if version.start_with? '5'
+    gem 'sqlite3', '~> 1.3.6'
+  else
+    gem 'sqlite3', '~> 1.4'
+  end
+
+  gem 'rails-controller-testing'
+  gem 'minitest-reporters'
 
   gem 'simplecov', '~> 0.10', require: false, group: :development
 end

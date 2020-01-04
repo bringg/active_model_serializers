@@ -113,14 +113,14 @@ end
 
 class SelfReferencingUserParentSerializer < ActiveModel::Serializer
   attributes :name
-  has_one :type, serializer: TypeSerializer, embed: :ids, include: true
+  has_one :type, serializer: TypeSerializer, embed: :ids, embed_in_root: true
 end
 
 class SelfReferencingUserSerializer < ActiveModel::Serializer
   attributes :name
 
-  has_one :type, serializer: TypeSerializer, embed: :ids, include: true
-  has_one :parent, serializer: SelfReferencingUserSerializer, embed: :ids, include: true
+  has_one :type, serializer: TypeSerializer, embed: :ids, embed_in_root: true
+  has_one :parent, serializer: SelfReferencingUserSerializer, embed: :ids, embed_in_root: true
 end
 
 class UserInfoSerializer < ActiveModel::Serializer
@@ -143,7 +143,6 @@ class CategorySerializer < ActiveModel::Serializer
 end
 
 class PostSerializer < ActiveModel::Serializer
-  attributes :title, :body
 
   def title
     keyword = serialization_options[:highlight_keyword]
@@ -153,6 +152,7 @@ class PostSerializer < ActiveModel::Serializer
   end
 
   has_many :comments
+  attributes :title, :body
 end
 
 class SpecialPostSerializer < ActiveModel::Serializer
