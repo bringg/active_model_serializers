@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require 'bundler/setup'
 require 'minitest/autorun'
+
 require 'active_model_serializers'
 require 'action_controller/serialization_test_case'
 require 'fixtures/poro'
@@ -13,6 +14,18 @@ Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
 require 'rails-controller-testing'
 Rails::Controller::Testing.install
+
+# handle tests with-out rails, quite a patch ;)
+module Rails
+  class Env
+    def test?; true; end
+  end
+
+  def self.env
+    Env.new
+  end
+end
+
 
 module TestHelper
   Routes = ActionDispatch::Routing::RouteSet.new

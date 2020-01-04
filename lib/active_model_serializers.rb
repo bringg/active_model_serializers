@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'active_model'
 require 'active_model/serializer'
 require 'active_model/serializer_support'
@@ -9,15 +10,14 @@ begin
   require 'action_controller'
   require 'action_controller/serialization'
 
-  # This code adds performance hit to your app.
-  # If you need, please require it manually.
-  #
-  # require 'action_controller/serialization_test_case'
-
   ActiveSupport.on_load(:action_controller) do
     if ::ActionController::Serialization.enabled
-      ActionController::Base.send(:include, ::ActionController::Serialization)
-      ActionController::TestCase.send(:include, ::ActionController::SerializationAssertions)
+      ActionController::Base.include ::ActionController::Serialization
+
+      if defined?(Rails) && Rails.respond_to?(:env) && Rails.env.test?
+        require 'action_controller/serialization_test_case'
+        ActionController::TestCase.include ::ActionController::SerializationAssertions
+      end
     end
   end
 rescue LoadError
