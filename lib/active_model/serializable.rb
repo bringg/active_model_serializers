@@ -18,10 +18,6 @@ module ActiveModel
       end
     end
 
-    def serializable_object_with_notification(options={})
-      serializable_object(options)
-    end
-
     def serializable_data
       embedded_in_root_associations.tap do |hash|
         if respond_to?(:meta) && meta

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module ActionController
   module SerializationAssertions
     extend ActiveSupport::Concern
@@ -8,20 +9,20 @@ module ActionController
       teardown :teardown_serialization_subscriptions
     end
 
-    module ::ActiveModel::Serializable
-      INSTRUMENTATION_KEY = '!serialize.active_model_serializers'.freeze
+    class ::ActiveModel::Serializer
+      INSTRUMENTATION_KEY = '!serialize.active_model_serializers'
 
-      alias_method :as_json_orig, :as_json
-      alias_method :serializable_object_with_notification_orig, :serializable_object_with_notification
+      alias as_json_orig as_json
+      alias serializable_object_orig serializable_object
 
-      def as_json(options={})
+      def as_json(options = {})
         instrument
         as_json_orig(options)
       end
 
-      def serializable_object_with_notification(options={})
+      def serializable_object(options = {})
         instrument
-        serializable_object_with_notification_orig(options)
+        serializable_object_orig(options)
       end
 
       def instrument
@@ -32,13 +33,13 @@ module ActionController
     def setup_serialization_subscriptions
       @serializers = Hash.new(0)
 
-      ActiveSupport::Notifications.subscribe("!serialize.active_model_serializers") do |_, serializer|
+      ActiveSupport::Notifications.subscribe('!serialize.active_model_serializers') do |_, serializer|
         @serializers[serializer] += 1
       end
     end
 
     def teardown_serialization_subscriptions
-      ActiveSupport::Notifications.unsubscribe("!serialize.active_model_serializers")
+      ActiveSupport::Notifications.unsubscribe('!serialize.active_model_serializers')
     end
 
     def process(*args)
@@ -72,27 +73,27 @@ module ActionController
       msg = message || "expecting <#{options.inspect}> but rendering with <#{rendered.keys}>"
 
       matches_serializer = case options
-                           when lambda { |options| options.kind_of?(Class) && options < ActiveModel::Serializer }
-                             rendered.any? do |serializer, count|
+                           when ->(options) { options.is_a?(Class) && options < ActiveModel::Serializer }
+                             rendered.any? do |serializer, _count|
                                options.name == serializer
                              end
                            when Symbol
                              options = options.to_s.camelize
-                             rendered.any? do |serializer, count|
+                             rendered.any? do |serializer, _count|
                                serializer == options
                              end
                            when String
-                             !options.empty? && rendered.any? do |serializer, count|
+                             !options.empty? && rendered.any? do |serializer, _count|
                                serializer == options
                              end
                            when Regexp
-                             rendered.any? do |serializer, count|
+                             rendered.any? do |serializer, _count|
                                serializer.match(options)
                              end
                            when NilClass
                              rendered.blank?
                            else
-                             raise ArgumentError, "assert_serializer only accepts a String, Symbol, Regexp, ActiveModel::Serializer, or nil"
+                             raise ArgumentError, 'assert_serializer only accepts a String, Symbol, Regexp, ActiveModel::Serializer, or nil'
                            end
       assert matches_serializer, msg
     end
